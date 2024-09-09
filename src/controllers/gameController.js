@@ -1,42 +1,78 @@
-import Game from "../models/gameModel.js"
+import Game from "../models/gameModel.js";
+import paystack from 'paystack-api';
 
+const paystackClient = paystack(process.env.PAYSTACK_SECRET_KEY);
 
-export const addGame = async (req,res) => {
+export const addGame = async (req, res) => {
     try {
-        const {user} = req.user
-        const {name, description, price, location} = req.body
+        const { user } = req.user;
+        const { name, description, location, premium, image } = req.body;
 
-        let imageUrl = ""
 
-        if (image) {
-            const uploadResponse = await cloudinary.uploader.upload(image, {
-                resource_type: 'auto',
+        const regularPrice = 2000; 
+        const premiumPrice = 5000; 
+
+        let gamePrice = premium ? premiumPrice : regularPrice;
+
+
+        const paymentData = {
+            amount: gamePrice * 100, 
+            email: user.email,
+            currency: 'NGN'
+        };
+
+        const paymentResponse = await paystackClient.transaction.initialize(paymentData);
+        const paymentUrl = paymentResponse.data.authorization_url;
+
+
+        res.status(200).send({ paymentUrl });
+
+
+        const paymentVerifyResponse = await paystackClient.transaction.verify(paymentResponse.data.reference);
+
+        if (paymentVerifyResponse.data.status === 'success') {
+            let imageUrl = "";
+            if (image) {
+                const uploadResponse = await cloudinary.uploader.upload(image, {
+                    resource_type: 'auto',
+                });
+                imageUrl = uploadResponse.secure_url;
+            }
+
+            
+            const game = new Game({
+                name,
+                description,
+                location,
+                price: gamePrice,
+                image: imageUrl,
+                phoneNumber: user.phoneNumber,
+                email: user.email,
+                paid: true,
+                premium: premium || false,
+                premiumPaid: premium ? true : false
             });
-            imageUrl = uploadResponse.secure_url;
-            console.log('Image uploaded successfully:', imageUrl);
+
+            await game.save();
+            return res.status(201).send(game);
+
+        } else {
+            return res.status(400).send({ error: "Payment verification failed." });
         }
 
-        const game = new Game({
-            name,
-            description,
-            location,
-            price,
-            image: imageUrl,
-            phoneNumber: user.phoneNumber,
-            email: user.email
-        })
-
-        await game.save()
-        res.status(201).send(game);
-
     } catch (error) {
-        
+        console.error(error);
+        res.status(500).send({ error: "Server Error" });
     }
-}
+};
+
+
+
+
 
 export const getAll = async (req,res) => {
     try {
-        const games = await Game.find()
+        const games = await Game.find().sort({ premium: -1, createdAt: -1 });
         if(!games){
             res.status(400).json ({message:'No Games found in database'})
         }else {

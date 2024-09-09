@@ -1,7 +1,5 @@
 import mongoose from 'mongoose'
 
-
-
 const gameSchema = new mongoose.Schema ({
     name: {
         type: String,
@@ -33,15 +31,18 @@ const gameSchema = new mongoose.Schema ({
     },
     paid: {
         type: Boolean,
-        default: null
+        default: false
     },
     premium: {
         type: Boolean,
-        default: null
+        default: false 
+    },
+
+    premiumPaid: {
+        type: Boolean,
+        default: false
     }
-
-
-})
+});
 
 const Game = mongoose.model('Game', gameSchema);
 export default Game;
