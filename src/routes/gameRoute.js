@@ -1,8 +1,8 @@
 import express from 'express'
 
-import { addGame, getAll, getSingle, deleteSingle } from "../controllers/gameController";
-import auth from '../middlewares/auth';
-import upload from '../config/cloudinary';
+import { addGame, getAll, getSingle, deleteSingle } from "../controllers/gameController.js";
+import auth from '../middlewares/auth.js';
+import upload from '../config/cloudinary.js';
 
 const router = express.Router()
 

@@ -1,11 +1,12 @@
 {
   "name": "game-site",
   "version": "1.0.0",
+  "type": "module",
   "description": "a sharing site",
   "main": "server.js",
   "scripts": {
     "seed": "node src/seed/adminSeeder.js",
-    "dev": "nodemon server.js",
+    "dev": "node server.js",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
