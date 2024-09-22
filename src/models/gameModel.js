@@ -1,6 +1,28 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
-const gameSchema = new mongoose.Schema ({
+const reviewSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',  
+        required: true
+    },
+    rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5 
+    },
+    comment: {
+        type: String,
+        required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
+});
+
+const gameSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -29,6 +51,15 @@ const gameSchema = new mongoose.Schema ({
         type: String,
         ref: "User"
     },
+    rating: {
+        type: Number,
+        default: 0 
+    },
+    numReviews: {
+        type: Number,
+        default: 0 
+    },
+    reviews: [reviewSchema], 
     paid: {
         type: Boolean,
         default: false
@@ -37,7 +68,6 @@ const gameSchema = new mongoose.Schema ({
         type: Boolean,
         default: false 
     },
-
     premiumPaid: {
         type: Boolean,
         default: false
